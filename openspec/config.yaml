@@ -1,32 +1,44 @@
 schema: spec-driven
 
-# Project context (optional)
-# Add only constraints that should guide OpenSpec artifacts and workflows.
-# Include constraints an agent cannot infer by reading the code.
-# Keep general project documentation and discoverable codebase facts out.
-# Example:
-#   context: |
-#     Designs and tasks must cover Windows, macOS, and Linux
-#     Write all artifacts in Spanish
+# Version initiale, avant l'étape Architecture.
+# À compléter ensuite : structure des dossiers, commandes de test, outil de migration.
+context: |
+  Stack : frontend Next.js, API PHP avec Slim, base de données MySQL,
+  le tout exécuté sous Docker (Docker Compose).
+  Langue : rédiger proposals, specs, design et tasks en français ;
+  garder SHALL / MUST / WHEN / THEN en anglais.
+  API : REST/JSON exposée par Slim et consommée par Next.js ; tout changement
+  de contrat (route, payload, code HTTP) doit apparaître dans les specs.
+  Base de données : tout changement de schéma passe par une migration
+  versionnée, avec retour arrière.
+  Environnement : les commandes (tests, migrations, build) s'exécutent dans
+  les conteneurs Docker.
+  Git : GitHub, branches <type>/S<semaine>-<slug>, Conventional Commits
+  (feat, fix, refactor, test, docs, style, chore, perf, clean, ci),
+  PR en draft liée à une issue (Closes #N).
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always state what is out of scope
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - Préciser les parties touchées: frontend Next.js, API Slim, base MySQL, Docker
+    - Indiquer les migrations de base nécessaires ou écrire "aucune"
+    - Inclure un plan de retour arrière
+  specs:
+    - Chaque requirement a au moins un scénario WHEN/THEN
+    - Décrire les endpoints concernés (méthode, route, statuts HTTP, forme du JSON)
+    - Un requirement par comportement observable, sans détail d'implémentation
+  design:
+    - Justifier les choix et citer les alternatives écartées
+    - Pour la base de données, décrire tables, index et migration
+  tasks:
+    - Regrouper par partie (base de données, API, frontend) et inclure les tests
+    - Ordonner: migration, puis API, puis frontend
+    - Une tâche = un commit conventionnel
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+operations:
+  apply:
+    guidance:
+      - Lancer les tests ciblés dans les conteneurs avant la suite complète
+      - Ne jamais exécuter une commande qui supprime les volumes Docker ou les données MySQL
+  archive:
+    guidance:
+      - Garder le résumé de clôture concis
