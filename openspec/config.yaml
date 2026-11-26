@@ -3,18 +3,12 @@ schema: spec-driven
 # Version initiale, avant l'étape Architecture.
 # À compléter ensuite : structure des dossiers, commandes de test, outil de migration.
 context: |
-  Stack : frontend Next.js, API PHP avec Slim, base de données MySQL,
-  le tout exécuté sous Docker (Docker Compose).
-  Langue : rédiger proposals, specs, design et tasks en français ;
-  garder SHALL / MUST / WHEN / THEN en anglais.
-  API : REST/JSON exposée par Slim et consommée par Next.js ; tout changement
-  de contrat (route, payload, code HTTP) doit apparaître dans les specs.
-  Base de données : tout changement de schéma passe par une migration
-  versionnée, avec retour arrière.
-  Environnement : les commandes (tests, migrations, build) s'exécutent dans
-  les conteneurs Docker.
-  Git : GitHub, branches <type>/S<semaine>-<slug>, Conventional Commits
-  (feat, fix, refactor, test, docs, style, chore, perf, clean, ci),
+  Stack : frontend Next.js, API PHP avec Slim, base de données MySQL, le tout exécuté sous Docker (Docker Compose).
+  Langue : rédiger proposals, specs, design et tasks en français ; garder SHALL / MUST / WHEN / THEN en anglais.
+  API : REST/JSON exposée par Slim et consommée par Next.js ; tout changement de contrat (route, payload, code HTTP) doit apparaître dans les specs.
+  Base de données : tout changement de schéma passe par une migration versionnée avec possibilité de rollback.
+  Environnement : les commandes (tests, migrations, build) s'exécutent dans les conteneurs Docker.
+  Git : GitHub, branches <type>/S<semaine>-<slug>, Conventional Commits (feat, fix, refactor, test, docs, style, chore, perf, clean, ci),
   PR en draft liée à une issue (Closes #N).
 
 rules:
@@ -24,7 +18,8 @@ rules:
     - Inclure un plan de retour arrière
   specs:
     - Chaque requirement a au moins un scénario WHEN/THEN
-    - Décrire les endpoints concernés (méthode, route, statuts HTTP, forme du JSON)
+    - Décrire les endpoints concernés (méthode, route, statuts HTTP, forme du
+      JSON)
     - Un requirement par comportement observable, sans détail d'implémentation
   design:
     - Justifier les choix et citer les alternatives écartées
@@ -38,7 +33,9 @@ operations:
   apply:
     guidance:
       - Lancer les tests ciblés dans les conteneurs avant la suite complète
-      - Ne jamais exécuter une commande qui supprime les volumes Docker ou les données MySQL
+      - Ne jamais exécuter une commande qui supprime les volumes Docker ou les
+        données MySQL
   archive:
     guidance:
       - Garder le résumé de clôture concis
+skillsScope: project
