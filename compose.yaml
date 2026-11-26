@@ -1,0 +1,84 @@
+name: tnc-notarial
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/api/Dockerfile
+      target: runtime
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: ${MYSQL_DATABASE:-notarial}
+      DB_USER: ${MYSQL_USER:-notarial}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_TTL: ${JWT_TTL:-28800}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # PHP-FPM ne parle que FastCGI : on verifie que le port 9000 accepte
+      # les connexions, sans dependre d'un client FastCGI supplementaire.
+      test:
+        - CMD
+        - php
+        - -r
+        - "exit(@fsockopen('127.0.0.1', 9000) ? 0 : 1);"
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    volumes:
+      - ./infra/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -q -O /dev/null http://127.0.0.1/api/v1/health || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    networks:
+      - backend
+
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-notarial}
+      MYSQL_USER: ${MYSQL_USER:-notarial}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./infra/docker/mysql/my.cnf:/etc/mysql/conf.d/app.cnf:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  db_data:

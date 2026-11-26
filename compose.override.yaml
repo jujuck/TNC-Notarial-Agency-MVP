@@ -1,0 +1,22 @@
+# Surcharge de developpement, chargee automatiquement par `docker compose up`.
+services:
+  api:
+    build:
+      target: dev
+    environment:
+      APP_ENV: development
+      APP_DEBUG: "true"
+      APP_URL: ${APP_URL:-http://localhost:8080}
+    volumes:
+      - ./api/src:/srv/api/src
+      - ./api/config:/srv/api/config
+      - ./api/public:/srv/api/public
+      - ./api/tests:/srv/api/tests
+      - ./api/openapi:/srv/api/openapi:ro
+      - ./api/phpunit.xml.dist:/srv/api/phpunit.xml.dist:ro
+      - ./api/phpstan.neon:/srv/api/phpstan.neon:ro
+      - ./api/.php-cs-fixer.dist.php:/srv/api/.php-cs-fixer.dist.php:ro
+
+  db:
+    ports:
+      - "127.0.0.1:${DB_PORT_HOST:-3307}:3306"
