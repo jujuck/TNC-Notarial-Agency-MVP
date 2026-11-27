@@ -13,8 +13,8 @@ context: |
 
 rules:
   proposal:
-    - Préciser les parties touchées: frontend Next.js, API Slim, base MySQL, Docker
-    - Indiquer les migrations de base nécessaires ou écrire "aucune"
+    - "Préciser les parties touchées : frontend Next.js, API Slim, base MySQL, Docker Compose"
+    - 'Indiquer les migrations de base nécessaires ou écrire "aucune"'
     - Inclure un plan de retour arrière
   specs:
     - Chaque requirement a au moins un scénario WHEN/THEN
@@ -26,7 +26,7 @@ rules:
     - Pour la base de données, décrire tables, index et migration
   tasks:
     - Regrouper par partie (base de données, API, frontend) et inclure les tests
-    - Ordonner: migration, puis API, puis frontend
+    - "Ordonner : migration, puis API, puis frontend"
     - Une tâche = un commit conventionnel
 
 operations:
