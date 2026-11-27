@@ -3,9 +3,11 @@ SHELL := /bin/bash
 
 COMPOSE ?= docker compose
 API_SERVICE ?= api
+WEB_SERVICE ?= web
 BASE_URL ?= http://localhost:8080
 
-.PHONY: help new-branch build up down logs sh test stan cs cs-fix smoke
+.PHONY: help new-branch build up down logs sh test stan cs cs-fix smoke \
+	web-build web-lint web-typecheck web-test web-sh
 
 help: ## Affiche les cibles disponibles
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "%-12s %s\n", $$1, $$2}'
@@ -42,3 +44,18 @@ cs-fix: ## Corrige le style
 
 smoke: ## Lance le smoke test HTTP contre BASE_URL
 	BASE_URL=$(BASE_URL) bash infra/scripts/smoke.sh
+
+web-build: ## Construit l'application Next.js dans le conteneur web
+	$(COMPOSE) run --rm $(WEB_SERVICE) npm run build
+
+web-lint: ## Verifie le style du front Next.js
+	$(COMPOSE) run --rm $(WEB_SERVICE) npm run lint
+
+web-typecheck: ## Verifie les types TypeScript
+	$(COMPOSE) run --rm $(WEB_SERVICE) npm run typecheck
+
+web-test: ## Lance les tests unitaires du front
+	$(COMPOSE) run --rm $(WEB_SERVICE) npm test
+
+web-sh: ## Ouvre un shell dans le conteneur web
+	$(COMPOSE) exec $(WEB_SERVICE) sh
