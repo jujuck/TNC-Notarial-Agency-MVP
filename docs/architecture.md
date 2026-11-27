@@ -95,8 +95,38 @@ Deux chaînes partagent le même Nginx :
 - Healthchecks : connexion TCP sur le port PHP-FPM (`fsockopen`, sans client
   FastCGI additionnel), `GET /api/v1/health` via Nginx, `mysqladmin ping`, et
   `GET /` sur le service web.
-- En développement, le service web exécute `npm run dev` avec la source montée ;
-  Nginx transmet `Upgrade` et `Connection` pour le HMR de Next.js.
+- Nginx transmet `Upgrade` et `Connection` pour le HMR de Next.js en
+  développement.
+
+## Développement local
+
+`docker compose up -d` (cible `make up`) charge automatiquement
+`compose.override.yaml` : la stack démarre en mode développement sans option
+supplémentaire.
+
+| Élément | Configuration de développement |
+| ------- | ------------------------------- |
+| API | cible `dev` (dépendances Composer de test incluses), `APP_ENV=development`, `APP_DEBUG=true`, sources `api/` montées, `opcache.validate_timestamps=1` |
+| Web | cible `dev`, sources `web/` montées, `next dev -H 0.0.0.0` (Turbopack + HMR), `NODE_ENV=development` |
+| MySQL | port `127.0.0.1:${DB_PORT_HOST:-3307}` publié pour un client local |
+| Nginx | `${HTTP_PORT:-8080}:80` ; le port `80` est interne au conteneur |
+
+- Les volumes nommés `web_node_modules` et `web_next` conservent les dépendances
+  et le cache Next.js entre deux démarrages, sans écrire dans le dépôt.
+- `scripts/dev-sitemap.mjs` génère `public/sitemap.xml` avant `next dev`, car
+  `next-sitemap` exige un build.
+- Les modifications de `web/` et de `api/src`, `api/config`, `api/public` sont
+  prises en compte sans redémarrage : HMR côté Next.js, revalidation OPcache
+  côté PHP.
+- `docker compose up` construit les images si elles n'existent pas, mais ne les
+  reconstruit pas si elles existent déjà. Après une modification des Dockerfiles,
+  de `package.json` ou de `composer.json`, lancer `make build` puis `make up`
+  (`docker compose up -d --build`).
+- `compose.override.yaml` n'est chargé que si aucun `-f` n'est passé à
+  `docker compose`. Il ne doit jamais servir à un déploiement.
+
+Vérification : `docker compose logs -f web` doit afficher un en-tête
+`▲ Next.js ... (Turbopack)` puis `✓ Ready`.
 
 ## Configuration
 
@@ -268,12 +298,6 @@ make web-sh                   # shell dans le conteneur web
 make down                     # arrêter la stack
 ```
 
-Production :
-
-```bash
-docker compose -f compose.yaml -f compose.prod.yaml up -d --build
-```
-
 Vérifications manuelles :
 
 ```bash
@@ -287,6 +311,56 @@ curl -i http://localhost:8080/api/v1/health/ready
 curl -i http://localhost:8080/api/v1/unknown
 curl -i -X POST http://localhost:8080/api/v1/health
 ```
+
+## Déploiement
+
+Le socle cible un VPS OVH avec Docker Engine et le plugin Compose v2. Le
+déploiement est manuel : aucun pipeline de livraison n'est encore défini.
+
+### Préparation du serveur
+
+- Créer le `.env` sur le serveur à partir de `.env.example`. Ne jamais le
+  committer ni le copier dans une image : seules les variables listées dans
+  `Configuration` sont lues.
+- Renseigner au minimum `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL`,
+  `NEXT_PUBLIC_SITE_URL` (URL HTTPS publique), les variables `MYSQL_*`,
+  `MYSQL_ROOT_PASSWORD`, `JWT_SECRET` (32 caractères minimum) et `HTTP_PORT`.
+- `NEXT_PUBLIC_SITE_URL` est figée au build : la modifier impose de reconstruire
+  l'image web.
+- `Settings` refuse `APP_DEBUG=true` avec `APP_ENV=production` : une configuration
+  invalide fait échouer le démarrage de l'application plutôt que d'exposer des
+  traces.
+
+### Mise en service
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+BASE_URL=https://exemple.fr make smoke
+```
+
+Ce mode :
+
+- ne charge pas `compose.override.yaml` : aucune source n'est montée ;
+- construit les cibles `runtime` : image web `standalone` exécutée par
+  `node server.js`, API PHP-FPM sans dépendances de test ;
+- force `APP_ENV=production`, `APP_DEBUG=false` et `NODE_ENV=production` ;
+- ne publie aucun port MySQL ;
+- applique `restart: unless-stopped` aux quatre services et conserve les
+  healthchecks.
+
+### Mise à jour et retour arrière
+
+```bash
+git pull
+docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+```
+
+- Les données MySQL vivent dans le volume `db_data` : `docker compose down`
+  conserve le volume. Ne jamais exécuter `docker compose down -v`.
+- Sauvegarder la base avant toute mise à jour susceptible de toucher le schéma.
+- La terminaison TLS (reverse proxy ou certificats) et les migrations de base ne
+  font pas partie de ce socle ; elles doivent être ajoutées devant Nginx et dans
+  le processus de déploiement.
 
 ## Tests et qualité
 
