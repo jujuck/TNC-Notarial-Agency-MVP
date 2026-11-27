@@ -8,6 +8,6 @@ Source de vérité du projet, complétée au fil de l'eau.
 | Architecture  | `architecture.md`                | fait     |
 | UX            | `ux.md`                          | à écrire |
 | SEO           | `seo.md`                         | fait     |
-| Accessibilité | `accessibilite.md`               | à écrire |
+| Accessibilité | `accessibilite.md`               | fait     |
 
 Mettre à jour le statut au fur et à mesure.
