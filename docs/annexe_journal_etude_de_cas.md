@@ -221,6 +221,11 @@ Une SPA React classique (rendu côté client) est défavorable au SEO et pénali
 - Variable d'environnement `SITE_INDEXABLE=false` documentée : bascule en une ligne pour la mise en production réelle.
 - Sitemap et données structurées restent générés.
 
+> **Mise à jour du 26/11/2026** : la variable `SITE_INDEXABLE` est abandonnée.
+> Le noindex devient permanent et sans interrupteur (constante applicative et
+> en-tête HTTP), conformément à l'ADR `0003-noindex-permanent.md`. Voir la
+> session 11.
+
 ### 7.4 Sécurité minimale du back-office
 HTTPS (Let's Encrypt), mots de passe hachés (argon2/bcrypt), requêtes préparées, protection CSRF, limitation des tentatives de connexion, validation des uploads (type, taille, renommage), secrets hors dépôt (`.env`), sauvegarde MySQL, en-têtes de sécurité (CSP, HSTS).
 
@@ -365,3 +370,32 @@ Reco : **Matomo** (PHP/MySQL, cohérent avec la stack, configuration sans consen
 | Q20 | Dépôt | Monorepo ; licence MIT pour le code (visuels sous leurs licences propres, listées dans `CREDITS.md`) | 🟡 |
 | Q21 | Domaine de démo | Sous-domaine neutre non évocateur d'une étude réelle | ❓ |
 | Q22 | Seuils CI | Lighthouse ≥ 90 (perf, a11y, SEO, bonnes pratiques) sur desktop, ≥ 80 perf mobile | 🟡 |
+
+---
+
+## 11. Session 7 – Socle web Next.js et noindex permanent (26/11/2026)
+
+### 11.1 Décisions ✅
+| ID | Décision | Conséquences |
+|----|----------|--------------|
+| D19 | Next.js **Pages Router** en sortie `standalone`, Node 24 LTS | SSR/ISR, catch-all `/admin`, montage client-only de React Admin |
+| D20 | Périmètre du change `add-web-platform` : **accueil + `/admin/login` + `/admin`** | Annonces, simulateur, RDV, contact, espace client, carrières, glossaire et plan du site reportés |
+| D21 | **Noindex permanent sans variable** (remplace `SITE_INDEXABLE=false`) | Meta `noindex, nofollow` + `X-Robots-Tag` sur toutes les réponses Next ; pas de `Disallow: /` ; sitemap non déclaré |
+| D22 | Nginx route `/` vers Next.js et conserve `/api` vers PHP-FPM | `/` ne renvoie plus `404` ; `X-Robots-Tag` de Nginx limité à `/api` |
+| D23 | `API_INTERNAL_URL=http://nginx` pour les appels serveur | PHP-FPM n'est pas un serveur HTTP ; le trafic reste sur le réseau Docker |
+| D24 | Administration en **fake auth** (`demo_session`) et **sans resource** | Aucune donnée réelle, aucun appel API métier ; le vrai auth arrive dans un change dédié |
+| D25 | `next-sitemap` en postbuild avec `generateRobotsTxt: false` | Le `robots.txt` statique n'est jamais écrasé |
+
+### 11.2 Points de vigilance
+- Lighthouse SEO échouera sur « page bloquée pour l'indexation » : c'est attendu,
+  ne pas retirer le noindex pour améliorer le score.
+- Le cookie `demo_session` est un drapeau de démonstration lisible par
+  JavaScript, pas un token : il ne doit jamais contenir d'identité ni de secret.
+- Le sitemap n'est pas soumis à Search Console ni à Bing Webmaster Tools.
+- `next-sitemap@4.2.3` est ancien : audit CVE et test de compatibilité avec
+  Next 16 obligatoires, avec repli sur un script Node minimal si nécessaire.
+
+### 11.3 Documentation mise à jour
+- `docs/seo.md` : stratégie, deux couches de noindex, `robots.txt`, sitemap.
+- `docs/adr/0003-noindex-permanent.md` : décision et alternatives.
+- `docs/architecture.md` : service web, proxy, variables, commandes.
