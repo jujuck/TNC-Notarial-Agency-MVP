@@ -12,5 +12,8 @@ services:
   nginx:
     restart: unless-stopped
 
+  web:
+    restart: unless-stopped
+
   db:
     restart: unless-stopped

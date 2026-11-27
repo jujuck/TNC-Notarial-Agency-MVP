@@ -17,6 +17,26 @@ services:
       - ./api/phpstan.neon:/srv/api/phpstan.neon:ro
       - ./api/.php-cs-fixer.dist.php:/srv/api/.php-cs-fixer.dist.php:ro
 
+  web:
+    build:
+      target: dev
+    # Genere `public/sitemap.xml` avant `next dev` : `next-sitemap` exige un
+    # build, et le fichier doit exister des le demarrage du serveur de dev.
+    command: sh -c "node scripts/dev-sitemap.mjs && npm run dev"
+    environment:
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: "1"
+      API_INTERNAL_URL: http://nginx
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:8080}
+    volumes:
+      - ./web:/app
+      - web_node_modules:/app/node_modules
+      - web_next:/app/.next
+
   db:
     ports:
       - "127.0.0.1:${DB_PORT_HOST:-3307}:3306"
+
+volumes:
+  web_node_modules:
+  web_next:

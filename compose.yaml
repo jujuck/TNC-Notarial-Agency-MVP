@@ -35,15 +35,45 @@ services:
     networks:
       - backend
 
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/web/Dockerfile
+      target: runtime
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:8080}
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      PORT: "3000"
+      # PHP-FPM ne parle pas HTTP : l'API est joignable via Nginx.
+      API_INTERNAL_URL: http://nginx
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:8080}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -q -O /dev/null http://127.0.0.1:3000/ || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - backend
+
   nginx:
     image: nginx:1.27-alpine
     ports:
       - "${HTTP_PORT:-8080}:80"
     volumes:
       - ./infra/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./infra/docker/nginx/snippets:/etc/nginx/snippets:ro
     depends_on:
       api:
         condition: service_healthy
+      # Nginx resout `web:3000` au demarrage : le conteneur web doit exister.
+      # `service_started` evite de bloquer l'API sur la sante du front.
+      web:
+        condition: service_started
     healthcheck:
       test:
         - CMD-SHELL
