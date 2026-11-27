@@ -1,0 +1,139 @@
+.skipLink {
+  position: absolute;
+  top: -100%;
+  left: var(--space-3);
+  z-index: 100;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--color-surface);
+  background: var(--color-ink);
+  text-decoration: none;
+}
+
+.skipLink:focus {
+  top: var(--space-3);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--color-border);
+  background: rgb(248 245 239 / 94%);
+  backdrop-filter: blur(10px);
+}
+
+.headerInner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: min(100% - 2rem, var(--max-width));
+  margin-inline: auto;
+  padding-block: var(--space-3);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+}
+
+.monogram {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 50%;
+  color: var(--color-accent);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.brandName {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.brandTagline {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+}
+
+.navList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  display: inline-block;
+  padding: var(--space-1) 0;
+  color: var(--color-ink-soft);
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+
+.navLink:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.footer {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-ink);
+  color: #f4efe5;
+}
+
+.footerInner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: min(100% - 2rem, var(--max-width));
+  margin-inline: auto;
+  padding-block: var(--space-5);
+}
+
+.footerBrand {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+}
+
+.footerText {
+  max-width: 38rem;
+  color: #cfc7b8;
+  font-size: 0.85rem;
+}
+
+.footerAddress {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.88rem;
+  font-style: normal;
+}
+
+.footerAddress a {
+  color: #f4efe5;
+}
+
+@media (max-width: 48rem) {
+  .headerInner {
+    align-items: flex-start;
+  }
+
+  .navList {
+    gap: var(--space-1) var(--space-2);
+  }
+}
