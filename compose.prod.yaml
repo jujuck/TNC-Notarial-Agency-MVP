@@ -1,0 +1,19 @@
+# Configuration de production : `docker compose -f compose.yaml -f compose.prod.yaml up -d`.
+# Aucun port MySQL n'est publie, aucune source n'est montee.
+services:
+  api:
+    build:
+      target: runtime
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+    restart: unless-stopped
+
+  nginx:
+    restart: unless-stopped
+
+  web:
+    restart: unless-stopped
+
+  db:
+    restart: unless-stopped

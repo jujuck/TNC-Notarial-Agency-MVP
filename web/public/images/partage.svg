@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title">
+  <title id="title">Étude notariale de l'Exemple — site de démonstration</title>
+  <rect width="1200" height="630" fill="#14213d" />
+  <rect x="72" y="72" width="1056" height="486" fill="none" stroke="#8a5a1f" stroke-width="3" />
+  <text x="120" y="250" fill="#f8f5ef" font-family="Georgia, serif" font-size="64">
+    Étude notariale de l'Exemple
+  </text>
+  <text x="120" y="330" fill="#f1e3c9" font-family="system-ui, sans-serif" font-size="34">
+    Démonstration technique — données fictives
+  </text>
+  <text x="120" y="470" fill="#cfc7b8" font-family="system-ui, sans-serif" font-size="26">
+    Site non indexable
+  </text>
+</svg>

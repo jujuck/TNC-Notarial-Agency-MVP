@@ -1,0 +1,100 @@
+openapi: 3.1.0
+info:
+  title: API - Etude notariale
+  version: 0.1.0
+  description: |
+    Contrat limite aux endpoints de sante du socle API. Les routes metier
+    seront ajoutees par les changes suivants.
+servers:
+  - url: http://localhost:8080
+    description: Developpement local
+paths:
+  /api/v1/health:
+    get:
+      summary: Liveness
+      operationId: getHealth
+      responses:
+        "200":
+          description: L'application repond.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+  /api/v1/health/ready:
+    get:
+      summary: Readiness
+      description: Verifie la connexion MySQL avec un SELECT 1.
+      operationId: getHealthReady
+      responses:
+        "200":
+          description: L'application et la base sont disponibles.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Readiness"
+        "503":
+          description: La base de donnees est indisponible.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Readiness"
+        default:
+          description: Erreur normalisee.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+components:
+  schemas:
+    Health:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          const: ok
+    Readiness:
+      type: object
+      required:
+        - status
+        - checks
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+            - unavailable
+        checks:
+          type: object
+          required:
+            - database
+          properties:
+            database:
+              type: string
+              enum:
+                - ok
+                - error
+    Problem:
+      type: object
+      required:
+        - type
+        - title
+        - status
+        - detail
+        - instance
+        - request_id
+      properties:
+        type:
+          type: string
+          const: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        request_id:
+          type: string
