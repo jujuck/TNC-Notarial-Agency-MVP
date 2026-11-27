@@ -18,3 +18,9 @@ api/vendor
 api/var
 api/.phpunit.cache
 api/.php-cs-fixer.cache
+
+web/node_modules
+web/.next
+web/coverage
+web/*.tsbuildinfo
+web/public/sitemap.xml
